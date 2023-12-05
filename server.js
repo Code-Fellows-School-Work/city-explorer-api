@@ -6,6 +6,8 @@ let suppliesList = require('./data/supplies.json');
 let foodList = require('./data/food.json');
 let theList = require('./data/list.json');
 
+let weather = require('./data/weather.json');
+
 // Use a library called "dotenv" to "read" my .env file
 // And put all of the "key/value" pairs into an object called process.env
 require("dotenv").config();
