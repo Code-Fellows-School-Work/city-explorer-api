@@ -31,7 +31,7 @@ Start time: _____
 
 Finish time: _____
 
-Actual time needed to complete: _____
+Actual time needed to complete: 2 days so far
 
 Name of feature: #3 Errors
 
@@ -41,4 +41,4 @@ Start time: _____
 
 Finish time: _____
 
-Actual time needed to complete: _____
+Actual time needed to complete: John completed this part so didn't spend any time on it besides verifying it works
