@@ -6,11 +6,11 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
-const axios = require*('axios');
 const app = express();
 app.use(cors());
 
 const PORT = process.env.PORT || 5511;
+const MOVIE_API_KEY = process.env.MOVIE_API_KEY;
 
 class Forecast {
   constructor(date, description) {
@@ -26,6 +26,43 @@ function getForecastForCity(city) {
 
     return forecastData;
 }
+
+app.get('/movies', async (request, response) => {
+    try {
+      const { city, country } = request.query;
+  
+      if (!city || !country) {
+        return response.status(400).json({ error: 'City parameters are required' });
+      }
+  
+      // Make an Axios request to TMDb API to discover movies based on the city
+      const tmdbResponse = await axios.get(
+        `https://api.themoviedb.org/3/discover/movie`,
+        {
+          params: {
+            api_key: MOVIE_API_KEY,
+            with_keywords: `${city}`, // Use city as keyword for search
+          },
+        }
+      );
+  
+      // Extract relevant movie information from the TMDb API response
+      const moviesData = tmdbResponse.data.results.map(movie => ({
+        title: movie.title,
+        overview: movie.overview,
+        average_votes: movie.vote_average,
+        total_votes: movie.vote_count,
+        image_url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+        popularity: movie.popularity,
+        released_on: movie.release_date,
+      }));
+  
+      response.json({ movies: moviesData });
+    } catch (error) {
+      console.error('Error fetching movie data:', error);
+      response.status(500).json({ error: 'Error fetching movie data' });
+    }
+  });
 
 app.get("/test", (request, response) => {
     response.send("Server is alive!");
@@ -68,4 +105,3 @@ app.use((error, request, response, next) => {
 });
 
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
-
