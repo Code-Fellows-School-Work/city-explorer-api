@@ -1,68 +1,51 @@
-'use strict';
-
-// used ChatGPT to reformat code and removed comments for readability. comments can be found in archive server.js
-let weather = require('./data/weather.json');
-require('dotenv').config();
-
+// server.js
 const express = require('express');
+const axios = require('axios');
 const cors = require('cors');
+
 const app = express();
 app.use(cors());
 
-const PORT = process.env.PORT || 5511;
-const MOVIE_API_KEY = process.env.MOVIE_API_KEY;
+// REACT_APP_API_KEY = pk.f7fa7627438ea5355a3aaafbf87cbb56
+// REACT_APP_WEATHER_API_KEY = f413f1561d574d7c94eb852c125ab20d
+// REACT_APP_MOVIE_API_KEY = bc2a219734f3bd7a32633ec396699d5a
 
-class Forecast {
-  constructor(date, description) {
-    this.date = date;
-    this.description = description;
+app.get('/api/weather', async (req, res) => {
+  const { lat, lon } = req.query;
+
+  try {
+    const weatherResponse = await axios.get(`https://api.weatherbit.io/v2.0/forecast/daily?lat=${lat}&lon=${lon}&key=f413f1561d574d7c94eb852c125ab20d&days=2`);
+    res.json(weatherResponse.data);
+  } catch (error) {
+    console.error('Error fetching weather data:', error);
+    res.status(500).json({ error: 'Error fetching weather data' });
   }
-}
+});
 
-function getForecastForCity(city) {
-    const forecastData = city.data.map(day => {
-        return new Forecast(day.datetime, day.weather.description);
-    });
+app.get('/api/movies', async (req, res) => {
+  const { cityName } = req.query;
+ 
 
-    return forecastData;
-}
+  try {
+    const moviesResponse = await axios.get(`https://api.themoviedb.org/3/search/movie?query=${cityName}&api_key=bc2a219734f3bd7a32633ec396699d5a`);
+    res.json(moviesResponse.data.results);
+  } catch (error) {
+    console.error('Error fetching movie data:', error);
+    res.status(500).json({ error: 'Error fetching movie data' });
+  }
+});
 
-app.get('/movies', async (request, response) => {
-    try {
-      const { city, country } = request.query;
-  
-      if (!city || !country) {
-        return response.status(400).json({ error: 'City parameters are required' });
-      }
-  
-      // Make an Axios request to TMDb API to discover movies based on the city
-      const tmdbResponse = await axios.get(
-        `https://api.themoviedb.org/3/discover/movie`,
-        {
-          params: {
-            api_key: MOVIE_API_KEY,
-            with_keywords: `${city}`, // Use city as keyword for search
-          },
-        }
-      );
-  
-      // Extract relevant movie information from the TMDb API response
-      const moviesData = tmdbResponse.data.results.map(movie => ({
-        title: movie.title,
-        overview: movie.overview,
-        average_votes: movie.vote_average,
-        total_votes: movie.vote_count,
-        image_url: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
-        popularity: movie.popularity,
-        released_on: movie.release_date,
-      }));
-  
-      response.json({ movies: moviesData });
-    } catch (error) {
-      console.error('Error fetching movie data:', error);
-      response.status(500).json({ error: 'Error fetching movie data' });
-    }
-  });
+app.get('/api/location', async (req, res) => {
+  const { cityName } = req.query;
+
+  try {
+    const locationResponse = await axios.get(`https://us1.locationiq.com/v1/search?key=pk.f7fa7627438ea5355a3aaafbf87cbb56&q=${cityName}&format=json`);
+    res.json(locationResponse.data);
+  } catch (error) {
+    console.error('Error fetching location data:', error);
+    res.status(500).json({ error: 'Error fetching location data' });
+  }
+});
 
 app.get("/test", (request, response) => {
     response.send("Server is alive!");
@@ -104,4 +87,7 @@ app.use((error, request, response, next) => {
   response.status(500).send(error.message);
 });
 
-app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
+const PORT = process.env.PORT || 5513;
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
+});
