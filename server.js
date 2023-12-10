@@ -1,24 +1,33 @@
+// server.js
+
 'use strict';
 
 // used ChatGPT to reformat code and removed comments for readability. comments can be found in archive server.js
 
+
 const express = require('express');
-const cors = require('cors');
 const axios = require('axios');
-require('dotenv').config();
+const cors = require('cors');
+
 
 const app = express();
 app.use(cors());
 
-const PORT = process.env.PORT || 5511;
-const MOVIE_API_KEY = process.env.MOVIE_API_KEY;
+// REACT_APP_API_KEY = pk.f7fa7627438ea5355a3aaafbf87cbb56
+// REACT_APP_WEATHER_API_KEY = f413f1561d574d7c94eb852c125ab20d
+// REACT_APP_MOVIE_API_KEY = bc2a219734f3bd7a32633ec396699d5a
 
-class Forecast {
-  constructor(date, description) {
-    this.date = date;
-    this.description = description;
+app.get('/api/weather', async (req, res) => {
+  const { lat, lon } = req.query;
+
+  try {
+    const weatherResponse = await axios.get(`https://api.weatherbit.io/v2.0/forecast/daily?lat=${lat}&lon=${lon}&key=f413f1561d574d7c94eb852c125ab20d&days=2`);
+    res.json(weatherResponse.data);
+  } catch (error) {
+    console.error('Error fetching weather data:', error);
+    res.status(500).json({ error: 'Error fetching weather data' });
   }
-}
+});
 
 function getForecastForCity(city) {
   const forecastData = city.data.map(day => {
@@ -99,8 +108,12 @@ app.use((error, request, response, next) => {
   response.status(500).send(error.message);
 });
 
+
+const PORT = process.env.PORT || 5513;
+
+
 app.listen(PORT, () => console.log(`Listening on port ${PORT}`));
 
-// ----------------- //
 
 // Handler Function //
+
